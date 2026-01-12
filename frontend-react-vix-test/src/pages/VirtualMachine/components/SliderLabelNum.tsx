@@ -14,6 +14,7 @@ interface Props {
   max?: number;
   step?: number;
   clickSelect?: boolean;
+  disabled?: boolean;
 }
 
 export const SliderLabelNum = ({
@@ -26,6 +27,7 @@ export const SliderLabelNum = ({
   max,
   step,
   clickSelect = true,
+  disabled,
 }: Props) => {
   const { theme, mode } = useZTheme();
   const { inputRef } = useRefFocusEffect();
@@ -77,6 +79,7 @@ export const SliderLabelNum = ({
         }}
       >
         <Slider
+          disabled={disabled}
           sx={{
             width: "100%",
             "& .MuiSlider-thumb": {
