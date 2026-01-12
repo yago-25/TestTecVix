@@ -185,6 +185,7 @@ export const useVmResource = () => {
       return null;
     }
 
+    toast.success(t("createVm.updateVmSuccess"));
     return response.data;
   };
 
