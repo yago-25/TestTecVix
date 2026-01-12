@@ -18,11 +18,12 @@ import { PasswordValidations } from "./PasswordValidations";
 import { useZVMSugestion } from "../../../stores/useZVMSugestion";
 import { ENetworkType } from "../../../types/VMTypes";
 import { AbsoluteBackDrop } from "../../../components/AbsoluteBackDrop";
-import { BTNISOsSection } from "./BTNISOsSection";
+// import { BTNISOsSection } from "./BTNISOsSection";
 import { useZVM } from "../../../stores/useZVM";
+import { useZUserProfile } from "../../../stores/useZUserProfile";
 
 export const FormVM = () => {
-  const { t } = useTranslation(); // createVm
+  const { t } = useTranslation();
   const { mode, theme } = useZTheme();
   const {
     vmSO,
@@ -54,7 +55,10 @@ export const FormVM = () => {
     localizationOptions,
     networkTypeOptions,
     isLoadingCreateVM,
+    osTypeOptions,
   } = useVmResource();
+
+  const { role } = useZUserProfile();
 
   const {
     os: sugestionOS,
@@ -68,6 +72,7 @@ export const FormVM = () => {
     value: "ssd",
     label: "SSD",
   };
+
   const handleCancel = () => {
     setVmPassword(genStrongPass(MIN_PASS_SIZE));
     setVmName("");
@@ -173,7 +178,7 @@ export const FormVM = () => {
           }}
         >
           <LabelInputVM
-            disabled
+            disabled={role === "member"}
             onChange={() => {}}
             value={"root"}
             label={t("createVm.userVM")}
@@ -185,6 +190,7 @@ export const FormVM = () => {
             }}
           >
             <LabelInputVM
+              disabled={role === "member"}
               onChange={setVmPassword}
               value={vmPassword}
               label={t("createVm.password")}
@@ -200,6 +206,7 @@ export const FormVM = () => {
           }}
         />
         <LabelInputVM
+          disabled={role === "member"}
           onChange={setVmName}
           value={vmName}
           label={t("createVm.vmName")}
@@ -220,12 +227,20 @@ export const FormVM = () => {
           }}
         >
           <DropDowText
+            disabled={role === "member"}
             label={t("createVm.dataCenterLocation")}
             data={localizationOptions}
             value={vmLocalization}
             onChange={setVmLocalization}
           />
-          <BTNISOsSection vmNameLabel={vmSO?.label} />
+          <DropDowText
+            disabled={role === "member"}
+            label={t("createVm.operationalSystem")}
+            data={osTypeOptions}
+            value={vmSO}
+            onChange={setVmSO}
+          />
+          {/* <BTNISOsSection vmNameLabel={vmSO?.label} /> */}
         </Stack>
         {/* Sliders */}
         <Stack
@@ -237,6 +252,7 @@ export const FormVM = () => {
           }}
         >
           <SliderLabelNum
+            disabled={role === "member"}
             label={t("createVm.cpu")}
             value={vmvCpu}
             onChange={setVmvCpu}
@@ -244,6 +260,7 @@ export const FormVM = () => {
             max={16}
           />
           <SliderLabelNum
+            disabled={role === "member"}
             label={t("createVm.memory")}
             value={vmMemory}
             onChange={setVmMemory}
@@ -251,6 +268,7 @@ export const FormVM = () => {
             max={128}
           />
           <SliderLabelNum
+            disabled={role === "member"}
             label={t("createVm.disk")}
             value={vmDisk}
             onChange={setVmDisk}
@@ -267,6 +285,7 @@ export const FormVM = () => {
         >
           {/* Network Type */}
           <DropDowText
+            disabled={role === "member"}
             label={t("createVm.network")}
             data={networkTypeOptions}
             value={vmNetwork}
@@ -284,7 +303,7 @@ export const FormVM = () => {
             }}
           >
             <DropDowText
-              disabled
+              disabled={role === "member"}
               label={t("createVm.storageType")}
               data={storageOptions}
               value={vmStorageType}
@@ -296,6 +315,7 @@ export const FormVM = () => {
           </Stack>
           {/* Backup */}
           <CheckboxLabel
+            disabled={role === "member"}
             value={hasBackup}
             onChange={setHasBackup}
             label={t("createVm.autoBackup")}
@@ -311,6 +331,7 @@ export const FormVM = () => {
           }}
         >
           <Btn
+            disabled={role === "member"}
             onClick={handleCancel}
             sx={{
               display: "none",
