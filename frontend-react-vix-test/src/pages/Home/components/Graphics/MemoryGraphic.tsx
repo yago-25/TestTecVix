@@ -14,10 +14,18 @@ import { Stack, Typography } from "@mui/material";
 import { useZTheme } from "../../../../stores/useZTheme";
 import { useTranslation } from "react-i18next";
 import { useZGlobalVar } from "../../../../stores/useZGlobalVar";
-import { IFormatData } from "../../../../types/socketType";
 
-export const MainGraphic = () => {
-  const [chartData, setChartData] = useState<IFormatData[]>([]);
+interface IMemoryData {
+  time: string;
+  value: number;
+}
+
+interface IMemoryGraphicProps {
+  totalMemory: number;
+}
+
+export const MemoryGraphic = ({ totalMemory }: IMemoryGraphicProps) => {
+  const [chartData, setChartData] = useState<IMemoryData[]>([]);
   const { theme, mode } = useZTheme();
   const { t } = useTranslation();
   const { currentVMName: vmName, currentIdVM } = useZGlobalVar();
@@ -26,12 +34,13 @@ export const MainGraphic = () => {
     if (!currentIdVM) return;
 
     const getBaseValue = (vmId: number) => {
-      const seed = vmId * 7;
-      return 30 + (seed % 40);
+      const seed = vmId * 11;
+      const percentage = 40 + (seed % 35);
+      return (totalMemory * percentage) / 100;
     };
 
     const generateInitialData = () => {
-      const data: IFormatData[] = [];
+      const data: IMemoryData[] = [];
       const now = new Date();
       const baseValue = getBaseValue(currentIdVM);
 
@@ -43,11 +52,12 @@ export const MainGraphic = () => {
           second: "2-digit",
         });
 
-        const variation = Math.sin(i * 0.5 + currentIdVM) * 15;
-        const randomNoise = (Math.random() - 0.5) * 10;
+        const variation =
+          Math.sin(i * 0.3 + currentIdVM) * (totalMemory * 0.15);
+        const randomNoise = (Math.random() - 0.5) * (totalMemory * 0.1);
         const value = Math.max(
-          5,
-          Math.min(95, baseValue + variation + randomNoise),
+          totalMemory * 0.1,
+          Math.min(totalMemory * 0.95, baseValue + variation + randomNoise),
         );
 
         data.push({
@@ -71,13 +81,16 @@ export const MainGraphic = () => {
           second: "2-digit",
         });
 
-        const baseValue = getBaseValue(currentIdVM);
-        const lastValue = prevData[prevData.length - 1]?.value || baseValue;
+        const lastValue =
+          prevData[prevData.length - 1]?.value || getBaseValue(currentIdVM);
 
-        const trend = (Math.random() - 0.5) * 8;
+        const trend = (Math.random() - 0.5) * (totalMemory * 0.08);
         const newValue = Math.max(
-          5,
-          Math.min(95, lastValue + trend + (Math.random() - 0.5) * 5),
+          totalMemory * 0.1,
+          Math.min(
+            totalMemory * 0.95,
+            lastValue + trend + (Math.random() - 0.5) * (totalMemory * 0.05),
+          ),
         );
 
         newData.push({
@@ -90,18 +103,20 @@ export const MainGraphic = () => {
     }, 2000);
 
     return () => clearInterval(interval);
-  }, [currentIdVM]);
+  }, [currentIdVM, totalMemory]);
 
-  const lastCpuUsage = chartData[chartData.length - 1]?.value || 0;
+  const lastMemoryUsage = chartData[chartData.length - 1]?.value || 0;
+  const lastMemoryPercentage = (lastMemoryUsage / totalMemory) * 100;
 
   const valueColor =
-    lastCpuUsage < 70
+    lastMemoryPercentage < 70
       ? theme[mode].ok
-      : lastCpuUsage < 90
+      : lastMemoryPercentage < 90
         ? theme[mode].warning
         : theme[mode].danger;
 
-  // if (!chartData.length) return <EmptyFeedBack />;
+  const threshold70 = totalMemory * 0.7;
+  const threshold90 = totalMemory * 0.9;
 
   return (
     <Stack
@@ -118,11 +133,13 @@ export const MainGraphic = () => {
           paddingRight: "24px",
         }}
       >
-        {`${t("graphics.cpuUsage")} - ${vmName}`}
+        {`${t("graphics.memoryUsage")} - ${vmName}`}
         <span style={{ color: theme[mode].gray, fontWeight: "300" }}>
           {" "}
           {t("graphics.currentUse")}{" "}
-          <span style={{ color: valueColor }}>{lastCpuUsage.toFixed(3)}%</span>
+          <span style={{ color: valueColor }}>
+            {lastMemoryUsage.toFixed(2)} GB ({lastMemoryPercentage.toFixed(1)}%)
+          </span>
         </span>
       </Typography>
       <ResponsiveContainer width="100%" height="100%">
@@ -144,7 +161,7 @@ export const MainGraphic = () => {
           />
           <YAxis
             label={{
-              value: t("graphics.cpuUsage"),
+              value: t("graphics.memoryUsage"),
               angle: -90,
               position: "insideLeft",
               fill: theme[mode].dark,
@@ -152,18 +169,40 @@ export const MainGraphic = () => {
             }}
             tick={{ fill: theme[mode].dark, fontSize: 10 }}
             domain={[0, (dataMax: number) => Math.ceil(dataMax * 1.16)]}
+            tickFormatter={(value) => `${value.toFixed(1)} GB`}
           />
           <Tooltip
-            formatter={(value) => parseFloat(value as string).toFixed(2)}
+            formatter={(value) => [
+              `${parseFloat(value as string).toFixed(2)} GB (${((parseFloat(value as string) / totalMemory) * 100).toFixed(1)}%)`,
+              t("graphics.memoryUsage"),
+            ]}
           />
           <Legend />
-          <ReferenceLine y={70} stroke="yellow" strokeDasharray="3 3" />
-          <ReferenceLine y={90} stroke="red" strokeDasharray="3 3" />
+          <ReferenceLine
+            y={threshold70}
+            stroke="yellow"
+            strokeDasharray="3 3"
+            label={{
+              value: `70% (${threshold70.toFixed(1)} GB)`,
+              fill: "yellow",
+              fontSize: 10,
+            }}
+          />
+          <ReferenceLine
+            y={threshold90}
+            stroke="red"
+            strokeDasharray="3 3"
+            label={{
+              value: `90% (${threshold90.toFixed(1)} GB)`,
+              fill: "red",
+              fontSize: 10,
+            }}
+          />
           <Area
             type="monotone"
             dataKey="value"
-            stroke="#8884d8"
-            fill="#8884d8"
+            stroke="#82ca9d"
+            fill="#82ca9d"
             dot={false}
             isAnimationActive={false}
             legendType="none"

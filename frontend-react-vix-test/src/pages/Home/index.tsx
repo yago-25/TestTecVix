@@ -15,6 +15,7 @@ import { Sidebar } from "../../components/Sidebar";
 import { useZGlobalVar } from "../../stores/useZGlobalVar";
 import { WelcomeCards } from "./components/WelcomeCards";
 import { useListVms } from "../../hooks/useListVms";
+import { MemoryGraphic } from "./components/Graphics/MemoryGraphic";
 
 export const HomePage = () => {
   const { theme, mode } = useZTheme();
@@ -148,7 +149,7 @@ export const HomePage = () => {
                             }}
                             onClick={() => setSelectedChart("bottom")}
                           />
-                          <BottomGraphic />
+                          <MemoryGraphic totalMemory={8} />
                         </Stack>
                       </Stack>
                     </Stack>
