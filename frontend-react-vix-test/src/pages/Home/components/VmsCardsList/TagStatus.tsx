@@ -32,8 +32,8 @@ export const TagStatus = ({ status, action, task }: IProps) => {
 
     if (checkStatus(status, action, task).isPaused) {
       return {
-        color: theme[mode].blueLight,
-        textColor: theme[mode].blue,
+        color: theme[mode].blue,
+        textColor: theme[mode].blueDark,
         text: t("home.paused"),
       };
     }
