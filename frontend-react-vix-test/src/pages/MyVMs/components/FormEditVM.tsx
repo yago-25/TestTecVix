@@ -475,7 +475,7 @@ export const FormEditVM = ({ onClose }: IProps) => {
             </TextRob16Font1S>
           </Btn>
           <Btn
-            disabled={disabledBtn}
+            disabled={role !== "admin"}
             onClick={() => setOpenDeleteModal(true)}
             sx={{
               padding: "9px 24px",
