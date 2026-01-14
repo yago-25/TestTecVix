@@ -61,10 +61,16 @@ export class UserModel {
     return prisma.user.count({
       where: {
         ...(!isIncludeDeleted && { deletedAt: null }),
-        OR: [
-          { username: { contains: query.search } },
-          { email: { contains: query.search } },
-        ],
+        ...(query.idBrandMaster !== undefined &&
+          query.idBrandMaster !== null && {
+            idBrandMaster: Number(query.idBrandMaster),
+          }),
+        ...(query.search && {
+          OR: [
+            { username: { contains: query.search } },
+            { email: { contains: query.search } },
+          ],
+        }),
       },
     });
   }
@@ -80,10 +86,16 @@ export class UserModel {
     const users = await prisma.user.findMany({
       where: {
         ...(!isIncludeDeleted && { deletedAt: null }),
-        OR: [
-          { username: { contains: query.search } },
-          { email: { contains: query.search } },
-        ],
+        ...(query.idBrandMaster !== undefined &&
+          query.idBrandMaster !== null && {
+            idBrandMaster: Number(query.idBrandMaster),
+          }),
+        ...(query.search && {
+          OR: [
+            { username: { contains: query.search } },
+            { email: { contains: query.search } },
+          ],
+        }),
       },
       take: limit || undefined,
       skip,

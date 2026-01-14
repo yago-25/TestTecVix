@@ -39,16 +39,23 @@ model brandMaster {
   cep           String?
   cityCode      Int?
   district      String?
-  stripeUserId  String?
-  isPoc         Boolean?  @default(false)
-  contract      String?
-  contractAt    DateTime? @db.DateTime(0)
-  pocOpenedAt   DateTime? @db.DateTime(0)
-  manual        String?
-  termsOfUse    String?
-  privacyPolicy String?
-  vM            vM[]
-  users         user[]
+  stripeUserId           String?
+  isPoc                  Boolean?  @default(false)
+  contract               String?
+  contractAt             DateTime? @db.DateTime(0)
+  pocOpenedAt            DateTime? @db.DateTime(0)
+  manual                 String?
+  termsOfUse             String?
+  privacyPolicy          String?
+  idBrandTheme           Int?
+  isStripeActive         Boolean?  @default(false)
+  discountRate           Decimal?  @db.Decimal(10, 2)
+  minConsumption         Decimal?  @db.Decimal(10, 2)
+  hasSelfRegister        Boolean?  @default(false)
+  hasPrepaid             Boolean?  @default(false)
+  retailPercentageDefault Decimal? @db.Decimal(10, 2)
+  vM                     vM[]
+  users                  user[]
 }
 
 model vM {

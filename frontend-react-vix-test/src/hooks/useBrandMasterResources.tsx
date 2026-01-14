@@ -9,7 +9,6 @@ import { useZBrandInfo } from "../stores/useZBrandStore";
 import { useUploadFile } from "./useUploadFile";
 import { IBrandMasterBasicInfo } from "../types/BrandMasterTypes";
 
-
 interface IUpdateBrandMaster {
   brandName?: string;
   idBrandTheme?: number;
@@ -273,7 +272,7 @@ export const useBrandMasterResources = () => {
         idBrandTheme: 1,
         isActive: true,
         brandLogo: data.brandLogo,
-        domain: undefined,
+        domain: data.mspDomain || undefined,
         setorName: data.sector,
         fieldName: undefined,
         location: data.locality,
@@ -289,7 +288,7 @@ export const useBrandMasterResources = () => {
         cityCode: data?.cityCode ? data.cityCode : undefined,
         district: data?.district ? data.district : undefined,
         isPoc: Boolean(data?.isPoc),
-        discountRate: data?.discountRate,
+        discountRate: data?.discountRate ? data.discountRate / 100 : undefined,
         minConsumption: data?.minConsumption,
       },
     });
@@ -303,14 +302,22 @@ export const useBrandMasterResources = () => {
     return { brandMaster: response.data };
   };
 
-  const listAllBrands = async () => {
+  const listAllBrands = async (search?: string, isPoc?: boolean) => {
     const auth = await getAuth();
     setIsLoading(true);
+    const params: Record<string, string> = {};
+    if (search && search.trim() !== "") {
+      params.search = search.trim();
+    }
+    if (isPoc !== undefined && isPoc !== null) {
+      params.isPoc = String(isPoc);
+    }
     const response = await api.get<IListAll<INewMSPResponse>>({
       url: "/brand-master",
       auth,
+      params,
     });
-    setIsLoading(true);
+    setIsLoading(false);
 
     if (response.error) {
       toast.error(response.message);
@@ -377,11 +384,12 @@ export const useBrandMasterResources = () => {
         cityCode: data?.cityCode ? data.cityCode : undefined,
         district: data?.district ? data.district : undefined,
         isPoc: Boolean(data?.isPoc),
-        discountRate: data?.discountRate,
+        discountRate: data?.discountRate ? data.discountRate / 100 : undefined,
         minConsumption: data?.minConsumption,
         retailPercentageDefault: Number(data?.retailPercentageDefault)
           ? Number(data?.retailPercentageDefault)
           : undefined,
+        domain: data?.domain || undefined,
       },
     });
 
