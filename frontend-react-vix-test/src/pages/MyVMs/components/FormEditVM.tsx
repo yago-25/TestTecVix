@@ -69,6 +69,8 @@ export const FormEditVM = ({ onClose }: IProps) => {
   const [vmIDToStart, setVmIDToStart] = useState<number>(0);
   const [vmIDToStop, setVmIDToStop] = useState<number>(0);
 
+  const { updateVMStatus } = useVmResource();
+
   const handleCancel = () => {
     setVmPassword(currentVM.pass);
     setVmName(currentVM.vmName);
@@ -127,13 +129,13 @@ export const FormEditVM = ({ onClose }: IProps) => {
     onClose(true);
   };
 
-  const handleStopVM = async () => {
-    setStatus("STOPPED");
-    onClose(true);
-  };
+  const handleConfirVMStatusChange = async (action: "START" | "STOP") => {
+    const vmID = action === "START" ? vmIDToStart : vmIDToStop;
+    const status = action === "START" ? "RUNNING" : "STOPPED";
 
-  const handleStartVM = async () => {
-    setStatus("RUNNING");
+    await updateVMStatus({ idVM: vmID, status });
+
+    setStatus(status);
     onClose(true);
   };
 
@@ -537,7 +539,7 @@ export const FormEditVM = ({ onClose }: IProps) => {
         <ModalStartVM
           vmName={vmName}
           idVM={vmIDToStart}
-          onConfirm={handleStartVM}
+          onConfirm={() => handleConfirVMStatusChange("START")}
           onCancel={() => setVmIDToStart(0)}
         />
       )}
@@ -545,7 +547,7 @@ export const FormEditVM = ({ onClose }: IProps) => {
         <ModalStopVM
           vmName={vmName}
           idVM={vmIDToStop}
-          onConfirm={handleStopVM}
+          onConfirm={() => handleConfirVMStatusChange("STOP")}
           onCancel={() => setVmIDToStop(0)}
         />
       )}

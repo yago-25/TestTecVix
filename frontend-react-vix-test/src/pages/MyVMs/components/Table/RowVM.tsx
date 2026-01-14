@@ -36,7 +36,12 @@ export const RowVM = ({ vm, index }: IProps) => {
   const [vmIDToStart, setVmIDToStart] = React.useState<number>(0);
   const { currentVM, setCurrentVM } = useZMyVMsList();
   const { getStatus } = useStatusInfo();
-  const { getOS, getVMById, isLoading: isLoadingVm } = useVmResource();
+  const {
+    getOS,
+    getVMById,
+    isLoading: isLoadingVm,
+    updateVMStatus,
+  } = useVmResource();
 
   const idVM: number = Number(row.idVM);
   const labelId = `enhanced-table-checkbox-${index}`;
@@ -48,11 +53,17 @@ export const RowVM = ({ vm, index }: IProps) => {
     setCurrentVM(newVMCurrent);
   };
 
-  const handleConfirVMStatusChange = async () => {
-    const updatedVM = await getVMById(vmIDToStop || vmIDToStart);
+  const handleConfirVMStatusChange = async (action: "START" | "STOP") => {
+    const vmID = action === "START" ? vmIDToStart : vmIDToStop;
+    const status = action === "START" ? "RUNNING" : "STOPPED";
+
+    await updateVMStatus({ idVM: vmID, status });
+
+    const updatedVM = await getVMById(vmID);
     if (updatedVM) {
       setRow(updatedVM);
     }
+
     setVmIDToStop(0);
     setVmIDToStart(0);
   };
@@ -422,7 +433,7 @@ export const RowVM = ({ vm, index }: IProps) => {
         <ModalStartVM
           vmName={row.vmName}
           idVM={vmIDToStart}
-          onConfirm={handleConfirVMStatusChange}
+          onConfirm={() => handleConfirVMStatusChange("START")}
           onCancel={() => setVmIDToStart(0)}
         />
       )}
@@ -430,7 +441,7 @@ export const RowVM = ({ vm, index }: IProps) => {
         <ModalStopVM
           vmName={row.vmName}
           idVM={vmIDToStop}
-          onConfirm={handleConfirVMStatusChange}
+          onConfirm={() => handleConfirVMStatusChange("STOP")}
           onCancel={() => setVmIDToStop(0)}
         />
       )}
