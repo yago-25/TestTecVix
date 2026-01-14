@@ -21,22 +21,21 @@ export class VMController {
   }
 
   async createVM(req: CustomRequest<unknown>, res: Response) {
-    const user = req.user as user;
-    const result = await this.vMService.createNewVM(req.body, user);
+    const result = await this.vMService.createNewVM(req.body);
     return res.status(STATUS_CODE.CREATED).json(result);
   }
 
   async updateVM(req: CustomRequest<unknown>, res: Response) {
     const { idVM } = req.params;
-    const user = req.user as user;
-    const result = await this.vMService.updateVM(Number(idVM), req.body, user);
+
+    const result = await this.vMService.updateVM(Number(idVM), req.body);
     return res.status(STATUS_CODE.OK).json(result);
   }
 
   async deleteVM(req: CustomRequest<unknown>, res: Response) {
     const { idVM } = req.params;
-    const user = req.user as user;
-    const result = await this.vMService.deleteVM(Number(idVM), user);
+
+    const result = await this.vMService.deleteVM(Number(idVM));
     return res.status(STATUS_CODE.OK).json(result);
   }
 }

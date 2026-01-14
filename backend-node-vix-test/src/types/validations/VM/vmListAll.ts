@@ -23,17 +23,16 @@ export const vmListAllSchema = querySchema.merge(
           message: `Status must be one of: ${Object.values(EVMStatus).join(", ")}`,
         },
       ),
-    idBrandMaster: z
-      .union([z.string(), z.number()]) // string or number
-      .nullable()
+    onlyMyVMs: z
+      .union([z.string(), z.boolean()])
       .optional()
-      .transform((val) =>
-        val
-          ? val.toString() === "null"
-            ? null
-            : parseInt(val.toString())
-          : val,
-      ),
+      .transform((val) => val === "true" || val === true)
+      .default(false),
+    onlyMSPVMs: z
+      .union([z.string(), z.boolean()])
+      .optional()
+      .transform((val) => val === "true" || val === true)
+      .default(false),
   }),
 );
 
