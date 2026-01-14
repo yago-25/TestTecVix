@@ -1,7 +1,6 @@
 import { prisma } from "../database/client";
 import { TBrandMaster } from "../types/validations/BrandMaster/createBrandMaster";
 import { TQuery } from "../types/validations/Queries/queryListAll";
-import moment from "moment";
 
 export class BrandMasterModel {
   async getSelf(domain: string) {
@@ -42,10 +41,14 @@ export class BrandMasterModel {
     return prisma.brandMaster.count({
       where: {
         ...(!isIncludeDeleted && { deletedAt: null }),
-        isPoc: query.isPoc,
-        brandName: {
-          contains: query.search,
-        },
+        ...(query.isPoc !== undefined &&
+          query.isPoc !== null && { isPoc: query.isPoc }),
+        ...(query.search &&
+          query.search.trim() !== "" && {
+            brandName: {
+              contains: query.search,
+            },
+          }),
       },
     });
   }
@@ -61,13 +64,17 @@ export class BrandMasterModel {
     const brands = await prisma.brandMaster.findMany({
       where: {
         ...(!isIncludeDeleted && { deletedAt: null }),
-        isPoc: query.isPoc,
-        brandName: {
-          contains: query.search,
-        },
+        ...(query.isPoc !== undefined &&
+          query.isPoc !== null && { isPoc: query.isPoc }),
+        ...(query.search &&
+          query.search.trim() !== "" && {
+            brandName: {
+              contains: query.search,
+            },
+          }),
       },
-      take: limit || undefined,
-      skip,
+      take: limit > 0 ? limit : undefined,
+      skip: limit > 0 ? skip : 0,
       ...(orderBy.length ? { orderBy } : { orderBy: [{ updatedAt: "desc" }] }),
     });
 

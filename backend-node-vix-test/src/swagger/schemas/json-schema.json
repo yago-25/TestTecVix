@@ -188,6 +188,51 @@
             "null"
           ]
         },
+        "idBrandTheme": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "isStripeActive": {
+          "type": [
+            "boolean",
+            "null"
+          ],
+          "default": false
+        },
+        "discountRate": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "minConsumption": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "hasSelfRegister": {
+          "type": [
+            "boolean",
+            "null"
+          ],
+          "default": false
+        },
+        "hasPrepaid": {
+          "type": [
+            "boolean",
+            "null"
+          ],
+          "default": false
+        },
+        "retailPercentageDefault": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
         "vM": {
           "type": "array",
           "items": {

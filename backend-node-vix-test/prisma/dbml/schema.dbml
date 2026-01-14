@@ -33,6 +33,13 @@ Table brandMaster {
   manual String
   termsOfUse String
   privacyPolicy String
+  idBrandTheme Int
+  isStripeActive Boolean [default: false]
+  discountRate Decimal
+  minConsumption Decimal
+  hasSelfRegister Boolean [default: false]
+  hasPrepaid Boolean [default: false]
+  retailPercentageDefault Decimal
   vM vM [not null]
   users user [not null]
 }

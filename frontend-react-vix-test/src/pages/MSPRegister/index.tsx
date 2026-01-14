@@ -9,6 +9,7 @@ import { TextRob16Font1S } from "../../components/Text1S";
 import { MspTableFilters } from "./MspTable/MspTableFilter";
 import { MspTable } from "./MspTable/MspTable";
 import { MspModal } from "./MspModal";
+import { MspFormInline } from "./components/MspFormInline";
 import { ModalDeleteMsp } from "./ModalDeleteMsp";
 import { useEffect, useState } from "react";
 import { ModalUSerNotCreated } from "./ModalUSerNotCreated";
@@ -16,6 +17,7 @@ import { ModalDeleteVMsFromMSP } from "./ModalDeleteVMsFromMSP";
 import { useBrandMasterResources } from "../../hooks/useBrandMasterResources";
 import { AbsoluteBackDrop } from "../../components/AbsoluteBackDrop";
 import { useVmResource } from "../../hooks/useVmResource";
+import { useZUserProfile } from "../../stores/useZUserProfile";
 
 export const MSPRegisterPage = () => {
   const { theme, mode } = useZTheme();
@@ -36,12 +38,15 @@ export const MSPRegisterPage = () => {
   const { t } = useTranslation();
   const { isLoading } = useBrandMasterResources();
   const { isLoadingDeleteVM, deleteVM } = useVmResource();
+  const { role } = useZUserProfile();
   const [openModalUserNotCreated, setOpenModalUserNotCreated] = useState(false);
+  const [editingMspId, setEditingMspId] = useState<number | undefined>();
 
   const resetAllStepStates = () => {
     setIsEditing([]);
     setActiveStep(0);
     resetAll();
+    setEditingMspId(undefined);
   };
 
   const handleCancelAfterDeleteMSP = () => {
@@ -56,6 +61,10 @@ export const MSPRegisterPage = () => {
   const handleAfterDeleteMSP = async () => {
     await Promise.all(vmsToBeDeleted.map((vm) => deleteVM(vm.idVM)));
     handleCancelAfterDeleteMSP();
+  };
+
+  const handleEditSuccess = () => {
+    setEditingMspId(undefined);
   };
 
   useEffect(() => {
@@ -103,66 +112,63 @@ export const MSPRegisterPage = () => {
           />
         </Box>
       }
-      //  sx= estilização do componente pai
-      // children= elementos do componente
-      // className= estilização do componente
-      // isLoading= ativa um loaing na tela
-      // title= componente do titulo
-      // subtitle= componente do subtitulo
-      // keepSubtitle = false= mantem o subtitulo no caso de tela mobile ou pequena
-      // sxContainer= estilização do componente children
-      // sxTitleSubTitle= estilização do componente title e subtitle
     >
       {Boolean(isLoading || isLoadingDeleteVM) && <AbsoluteBackDrop open />}
       <Stack
         sx={{
           width: "100%",
-          gap: "26px",
+          gap: "32px",
           borderRadius: "16px",
           boxSizing: "border-box",
         }}
       >
-        {
+        {(role === "admin" || role === "manager") && (
+          <MspFormInline
+            editingMspId={editingMspId}
+            onSuccess={handleEditSuccess}
+          />
+        )}
+
+        <Stack
+          sx={{
+            background: theme[mode].mainBackground,
+            borderRadius: "16px",
+            width: "100%",
+            padding: "24px",
+            boxSizing: "border-box",
+          }}
+        >
           <Stack
             sx={{
-              background: theme[mode].mainBackground,
-              borderRadius: "16px",
-              width: "100%",
-              padding: "24px",
-              boxSizing: "border-box",
+              gap: "40px",
             }}
           >
-            <Stack
+            <Box
               sx={{
-                gap: "40px",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                flexWrap: "wrap",
+                gap: "24px",
               }}
             >
-              <Box
+              <TextRob16Font1S
                 sx={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  flexWrap: "wrap",
-                  gap: "24px",
+                  color: theme[mode].black,
+                  fontSize: "16px",
+                  fontWeight: 500,
+                  lineHeight: "24px",
                 }}
               >
-                <TextRob16Font1S
-                  sx={{
-                    color: theme[mode].black,
-                    fontSize: "16px",
-                    fontWeight: 500,
-                    lineHeight: "24px",
-                  }}
-                >
-                  {t("mspRegister.tableTitle")}
-                </TextRob16Font1S>
-                <MspTableFilters />
-              </Box>
-              <MspTable />
-            </Stack>
+                {t("mspRegister.tableTitle")}
+              </TextRob16Font1S>
+              <MspTableFilters />
+            </Box>
+            <MspTable onEditMsp={setEditingMspId} />
           </Stack>
-        }
+        </Stack>
       </Stack>
+
       {modalOpen !== null && (
         <Modal
           open={modalOpen !== null}
@@ -177,7 +183,10 @@ export const MSPRegisterPage = () => {
             {(modalOpen === "editedMsp" || modalOpen === "createdMsp") && (
               <MspModal
                 modalType={modalOpen}
-                onClose={() => setModalOpen(null)}
+                onClose={() => {
+                  setModalOpen(null);
+                  setEditingMspId(undefined);
+                }}
               />
             )}
             {modalOpen === "deletedMsp" && mspToBeDeleted && (

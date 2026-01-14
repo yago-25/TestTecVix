@@ -24,14 +24,38 @@ export const brandMasterSchema = z.object({
   stripeUserId: z.string().nullable().optional(),
   isStripeActive: z.boolean().default(false).optional(),
   isPoc: z.boolean().default(false).optional(),
-  discountRate: z.number().min(0).optional(),
-  minConsumption: z.number().min(0).optional(),
+  discountRate: z
+    .union([z.number(), z.string()])
+    .optional()
+    .transform((val) =>
+      val !== undefined && val !== null ? Number(val) : undefined,
+    )
+    .refine((val) => val === undefined || val >= 0, {
+      message: "Discount rate must be greater than or equal to 0",
+    }),
+  minConsumption: z
+    .union([z.number(), z.string()])
+    .optional()
+    .transform((val) =>
+      val !== undefined && val !== null ? Number(val) : undefined,
+    )
+    .refine((val) => val === undefined || val >= 0, {
+      message: "Min consumption must be greater than or equal to 0",
+    }),
   contractAt: z.date().nullable().optional(),
   pocOpenedAt: z.date().nullable().optional(),
   manual: z.string().nullable().optional(),
   termsOfUse: z.string().nullable().optional(),
   privacyPolicy: z.string().nullable().optional(),
-  retailPercentageDefault: z.number().min(0).optional(),
+  retailPercentageDefault: z
+    .union([z.number(), z.string()])
+    .optional()
+    .transform((val) =>
+      val !== undefined && val !== null ? Number(val) : undefined,
+    )
+    .refine((val) => val === undefined || val >= 0, {
+      message: "Retail percentage default must be greater than or equal to 0",
+    }),
   hasSelfRegister: z.boolean().optional(),
   hasPrepaid: z.boolean().optional(),
 });
