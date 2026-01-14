@@ -14,6 +14,17 @@ import { SkeletonTable } from "./components/SkeletonTable";
 import { ModalEditVM } from "./components/ModalEditVM";
 import { AbsoluteBackDrop } from "../../components/AbsoluteBackDrop";
 
+interface IVMListParams {
+  search?: string | null;
+  page?: number;
+  orderBy?: string;
+  limit?: number;
+  idBrandMaster?: number | null;
+  status?: string;
+  onlyMyVMs?: boolean;
+  onlyMSPVMs?: boolean;
+}
+
 export const MyVMsPage = () => {
   const {
     setCurrentPage,
@@ -42,14 +53,36 @@ export const MyVMsPage = () => {
   const { socketRef } = useZGlobalVar();
 
   const handlerFetchVMList = async (page: number = 0) => {
-    const { totalCount, vmList } = await fetchMyVmsList({
-      search,
+    const params: IVMListParams = {
       page: page || currentPage - 1 || 0,
-      orderBy: orderBy ? `${orderBy}:${order}` : undefined,
       limit,
-      idBrandMaster: idBrand,
-      status,
-    });
+    };
+
+    if (search) {
+      params.search = search;
+    }
+
+    if (orderBy && order) {
+      params.orderBy = `${orderBy}:${order}`;
+    }
+
+    if (status) {
+      params.status = status;
+    }
+
+    if (selectedMSP?.idBrandMaster) {
+      params.idBrandMaster = selectedMSP.idBrandMaster;
+
+      if (onlyMyVMs) {
+        params.onlyMSPVMs = true;
+      }
+    } else if (onlyMyVMs) {
+      params.idBrandMaster = idBrand;
+      params.onlyMyVMs = true;
+    }
+
+    const { totalCount, vmList } = await fetchMyVmsList(params);
+
     setVMList(vmList);
     setTotalCount(totalCount);
     if (isFirstLoading) setIsFirstLoading(false);
