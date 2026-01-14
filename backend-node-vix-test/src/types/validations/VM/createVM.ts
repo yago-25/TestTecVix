@@ -19,6 +19,13 @@ export const vMCreatedSchema = z.object({
   idBrandMaster: z.number().nullable().optional(),
   status: EVMStatus.optional(),
   os: z.string().optional(),
+  pass: z
+    .string()
+    .min(8, "Password must be at least 8 characters")
+    .regex(passwordRegex.numbers, "Must contain at least 2 numbers")
+    .regex(passwordRegex.lowercase, "Must contain at least 2 lowercase letters")
+    .regex(passwordRegex.uppercase, "Must contain at least 2 uppercase letters")
+    .regex(passwordRegex.special, "Must contain at least 2 special characters"),
 });
 
 export type TVMCreate = z.infer<typeof vMCreatedSchema>;

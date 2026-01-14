@@ -23,6 +23,7 @@ import { StopCircleIcon } from "../../../../icons/StopCircleIcon";
 import { ModalStartVM } from "../ModalStartVM";
 import { ModalStopVM } from "../ModalStopVM";
 import { useStatusInfo } from "../../../../hooks/useStatusInfo";
+import { useZUserProfile } from "../../../../stores/useZUserProfile";
 
 interface IProps {
   vm: IVMCreatedResponse;
@@ -42,6 +43,8 @@ export const RowVM = ({ vm, index }: IProps) => {
     isLoading: isLoadingVm,
     updateVMStatus,
   } = useVmResource();
+
+  const { role } = useZUserProfile();
 
   const idVM: number = Number(row.idVM);
   const labelId = `enhanced-table-checkbox-${index}`;
@@ -418,6 +421,7 @@ export const RowVM = ({ vm, index }: IProps) => {
               </IconButton>
             )}
             <Btn
+              disabled={role === "member"}
               onClick={() => handleClick(row)}
               sx={{
                 borderRadius: "50%",
