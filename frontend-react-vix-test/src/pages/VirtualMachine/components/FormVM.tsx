@@ -88,7 +88,6 @@ export const FormVM = () => {
   const handleCreateVm = async () => {
     const vm = {
       hasBackup,
-      vmPassword,
       vmName,
       vmNetwork,
       vmSO,

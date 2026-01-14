@@ -15,7 +15,6 @@ import { ModalConfirmCreate } from "../../VirtualMachine/components/ModalConfirm
 import { CloseXIcon } from "../../../icons/CloseXIcon";
 import { useZMyVMsList } from "../../../stores/useZMyVMsList";
 import { PlayCircleIcon } from "../../../icons/PlayCircleIcon";
-// import { PauseCircleIcon } from "../../../icons/PauseCircleIcon";
 import { StopCircleIcon } from "../../../icons/StopCircleIcon";
 import { TextRob16FontL } from "../../../components/TextL";
 import { useStatusInfo } from "../../../hooks/useStatusInfo";
@@ -24,10 +23,12 @@ import { ModalDeleteVM } from "./ModalDeleteVM";
 import { AbsoluteBackDrop } from "../../../components/AbsoluteBackDrop";
 import { ModalStartVM } from "./ModalStartVM";
 import { ModalStopVM } from "./ModalStopVM";
+import { useZUserProfile } from "../../../stores/useZUserProfile";
 
 interface IProps {
   onClose: (edit?: boolean) => void;
 }
+
 export const FormEditVM = ({ onClose }: IProps) => {
   const { theme, mode } = useZTheme();
   const { t } = useTranslation();
@@ -40,74 +41,60 @@ export const FormEditVM = ({ onClose }: IProps) => {
     isLoadingDeleteVM,
     getNetworkType,
     isLoadingUpdateVM,
+    updateVMStatus,
+    getVMById,
   } = useVmResource();
 
-  const { statusHashMap } = useStatusInfo();
+  const { statusHashMap, getStatus } = useStatusInfo();
   const { currentVM, setCurrentVM } = useZMyVMsList();
-  const [vmPassword, setVmPassword] = useState(currentVM.pass);
-  const [vmName, setVmName] = useState(currentVM.vmName);
-  const [vmSO, setVmSO] = useState<TOptions>({
-    label: currentVM.os,
-    value: currentVM.os,
+
+  const [vmPassword, setVmPassword] = useState(currentVM?.pass || "");
+  const [vmName, setVmName] = useState(currentVM?.vmName || "");
+  const [vmSO] = useState<TOptions>({
+    label: currentVM?.os || "",
+    value: currentVM?.os || "",
   });
-  const [vmvCpu, setVmvCpu] = useState(currentVM.vCPU);
-  const [vmMemory, setVmMemory] = useState(currentVM.ram);
-  const [vmDisk, setVmDisk] = useState(currentVM.disk);
+  const [vmvCpu, setVmvCpu] = useState(currentVM?.vCPU || 1);
+  const [vmMemory, setVmMemory] = useState(currentVM?.ram || 1);
+  const [vmDisk, setVmDisk] = useState(currentVM?.disk || 50);
   const [vmStorageType] = useState<TOptions>({
     value: "ssd",
     label: "SSD",
   });
   const [vmLocalization] = useState<TOptions>({
-    label: localizationOptions[0]?.label,
-    value: localizationOptions[0]?.value,
+    label: localizationOptions[0]?.label || "",
+    value: localizationOptions[0]?.value || "",
   });
-  const [hasBackup, setHasBackup] = useState(currentVM.hasBackup);
+  const [hasBackup, setHasBackup] = useState(currentVM?.hasBackup || false);
 
   const [openConfirm, setOpenConfirm] = useState(false);
-  const [status, setStatus] = useState<string | null>(currentVM.status);
+  const [status, setStatus] = useState<string | null>(
+    currentVM?.status || null,
+  );
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const [vmIDToStart, setVmIDToStart] = useState<number>(0);
   const [vmIDToStop, setVmIDToStop] = useState<number>(0);
 
-  const { updateVMStatus } = useVmResource();
+  const { role } = useZUserProfile();
 
   const handleCancel = () => {
-    setVmPassword(currentVM.pass);
-    setVmName(currentVM.vmName);
-    setVmSO({
-      label: currentVM.os,
-      value: currentVM.os,
-    });
-    setVmvCpu(currentVM.vCPU);
-    setVmMemory(currentVM.ram);
-    setVmDisk(currentVM.disk);
-    // setVmStorageType(null);
-    // setVmLocalization(null);
-    setHasBackup(currentVM.hasBackup);
-    setStatus(currentVM.status);
+    setVmPassword(currentVM?.pass || "");
+    setVmName(currentVM?.vmName || "");
+    setVmvCpu(currentVM?.vCPU || 1);
+    setVmMemory(currentVM?.ram || 1);
+    setVmDisk(currentVM?.disk || 50);
+    setHasBackup(currentVM?.hasBackup || false);
+    setStatus(currentVM?.status || null);
     onClose();
   };
 
   const handleEditVm = async () => {
-    const vm = {
-      hasBackup,
-      vmPassword,
-      vmName,
-      vmSO,
-      vmvCpu,
-      vmMemory,
-      vmDisk,
-      vmStorageType,
-      vmLocalization,
-      status,
-      oldVM: currentVM,
-    };
     setOpenConfirm(false);
     const isValidPass = validPassword(vmPassword);
     if (!isValidPass) return;
+
     await updateVM(
       {
-        ...vm,
         vmName: vmName,
         vCPU: vmvCpu,
         ram: vmMemory,
@@ -131,12 +118,18 @@ export const FormEditVM = ({ onClose }: IProps) => {
 
   const handleConfirVMStatusChange = async (action: "START" | "STOP") => {
     const vmID = action === "START" ? vmIDToStart : vmIDToStop;
-    const status = action === "START" ? "RUNNING" : "STOPPED";
+    const newStatus = action === "START" ? "RUNNING" : "STOPPED";
 
-    await updateVMStatus({ idVM: vmID, status });
+    await updateVMStatus({ idVM: vmID, status: newStatus });
 
-    setStatus(status);
-    onClose(true);
+    const updatedVM = await getVMById(vmID);
+    if (updatedVM) {
+      setCurrentVM(updatedVM);
+      setStatus(updatedVM.status);
+    }
+
+    setVmIDToStop(0);
+    setVmIDToStart(0);
   };
 
   const disabledBtn =
@@ -146,7 +139,10 @@ export const FormEditVM = ({ onClose }: IProps) => {
     !vmMemory ||
     !vmDisk ||
     !vmPassword ||
-    !vmLocalization;
+    !vmLocalization ||
+    role === "member";
+
+  const currentStatus = getStatus(currentVM);
 
   return (
     <>
@@ -181,7 +177,6 @@ export const FormEditVM = ({ onClose }: IProps) => {
             <CloseXIcon fill={theme[mode].gray} />
           </IconButton>
         </Stack>
-        {/* Inputs */}
 
         {/* User and password */}
         <Stack
@@ -205,21 +200,22 @@ export const FormEditVM = ({ onClose }: IProps) => {
             }}
           >
             <LabelInputVM
-              onChange={() => {}}
+              onChange={setVmPassword}
               value={vmPassword}
               label={t("createVm.password")}
               placeholder={t("createVm.userPassword")}
               type="password"
-              disabled
             />
             <PasswordValidations vmPassword={vmPassword} />
           </Stack>
         </Stack>
+
         <Divider
           sx={{
             borderColor: theme[mode].grayLight,
           }}
         />
+
         <LabelInputVM
           onChange={setVmName}
           value={vmName}
@@ -231,6 +227,7 @@ export const FormEditVM = ({ onClose }: IProps) => {
             },
           }}
         />
+
         {/* Location and System */}
         <Stack
           sx={{
@@ -255,6 +252,7 @@ export const FormEditVM = ({ onClose }: IProps) => {
             disabled
           />
         </Stack>
+
         {/* Sliders */}
         <Stack
           sx={{
@@ -268,25 +266,26 @@ export const FormEditVM = ({ onClose }: IProps) => {
             label={t("createVm.cpu")}
             value={vmvCpu}
             onChange={setVmvCpu}
-            min={currentVM.vCPU || 1}
+            min={currentVM?.vCPU || 1}
             max={16}
           />
           <SliderLabelNum
             label={t("createVm.memory")}
             value={vmMemory}
             onChange={setVmMemory}
-            min={currentVM.ram || 1}
+            min={currentVM?.ram || 1}
             max={128}
           />
           <SliderLabelNum
             label={t("createVm.disk")}
             value={vmDisk}
             onChange={setVmDisk}
-            min={currentVM.disk || 50}
+            min={currentVM?.disk || 50}
             max={2048}
             step={16}
           />
         </Stack>
+
         {/* Advanced options */}
         <Stack
           sx={{
@@ -323,7 +322,7 @@ export const FormEditVM = ({ onClose }: IProps) => {
               label={t("createVm.network")}
               data={[]}
               value={getNetworkType({
-                networkTypeValue: currentVM.networkType,
+                networkTypeValue: currentVM?.networkType,
               })}
               onChange={() => {}}
               sxContainer={{
@@ -331,6 +330,7 @@ export const FormEditVM = ({ onClose }: IProps) => {
               }}
             />
           </Stack>
+
           {/* Play Pause and Stop */}
           <TextRob18Font2M
             sx={{
@@ -342,6 +342,7 @@ export const FormEditVM = ({ onClose }: IProps) => {
           >
             {t("home.status", { status: statusHashMap[status] })}
           </TextRob18Font2M>
+
           {/* Actions buttons & Ips */}
           <Stack
             flexDirection={"column"}
@@ -367,9 +368,7 @@ export const FormEditVM = ({ onClose }: IProps) => {
               }}
             >
               <IconButton
-                disabled={
-                  currentVM.status === "RUNNING" || currentVM.status === null
-                }
+                disabled={currentStatus?.isRunning}
                 onClick={() => setVmIDToStart(currentVM.idVM)}
                 sx={{
                   gap: "8px",
@@ -389,9 +388,7 @@ export const FormEditVM = ({ onClose }: IProps) => {
                 </TextRob16FontL>
               </IconButton>
               <IconButton
-                disabled={
-                  currentVM.status === "STOPPED" || currentVM.status === null
-                }
+                disabled={currentStatus?.isStopped}
                 onClick={() => setVmIDToStop(currentVM.idVM)}
                 sx={{
                   gap: "8px",
@@ -412,6 +409,7 @@ export const FormEditVM = ({ onClose }: IProps) => {
               </IconButton>
             </Stack>
           </Stack>
+
           {/* Backup */}
           <CheckboxLabel
             value={hasBackup}
@@ -419,6 +417,7 @@ export const FormEditVM = ({ onClose }: IProps) => {
             label={t("createVm.autoBackup")}
           />
         </Stack>
+
         {/* Action button */}
         <Stack
           sx={{
@@ -501,6 +500,7 @@ export const FormEditVM = ({ onClose }: IProps) => {
           </Btn>
         </Stack>
       </Stack>
+
       {openConfirm && (
         <ModalConfirmCreate
           isEditing
@@ -521,12 +521,13 @@ export const FormEditVM = ({ onClose }: IProps) => {
           vmLocalization={vmLocalization?.label}
           vmNetwork={
             getNetworkType({
-              networkTypeValue: currentVM.networkType,
+              networkTypeValue: currentVM?.networkType,
             })?.label
           }
           status={statusHashMap[status]}
         />
       )}
+
       {openDeleteModal && (
         <ModalDeleteVM
           open={openDeleteModal}
@@ -535,6 +536,7 @@ export const FormEditVM = ({ onClose }: IProps) => {
           onCancel={() => setOpenDeleteModal(false)}
         />
       )}
+
       {Boolean(vmIDToStart) && (
         <ModalStartVM
           vmName={vmName}
@@ -543,6 +545,7 @@ export const FormEditVM = ({ onClose }: IProps) => {
           onCancel={() => setVmIDToStart(0)}
         />
       )}
+
       {Boolean(vmIDToStop) && (
         <ModalStopVM
           vmName={vmName}
