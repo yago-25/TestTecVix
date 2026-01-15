@@ -1,45 +1,83 @@
 import { useState } from "react";
 import { api } from "../services/api";
-import { IListAll } from "../types/ListAllTypes";
-import { toast } from "react-toastify";
 import { useAuth } from "./useAuth";
 import { IVMCreatedResponse } from "../types/VMTypes";
+
+interface IVMListParams {
+  search?: string | null;
+  page?: number;
+  orderBy?: string;
+  limit?: number;
+  idBrandMaster?: number | null;
+  status?: string;
+  onlyMyVMs?: boolean;
+  onlyMSPVMs?: boolean;
+}
+
+interface IVMListResponse {
+  result: IVMCreatedResponse[];
+  totalCount: number;
+}
 
 export const useMyVMList = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { getAuth } = useAuth();
 
   const fetchMyVmsList = async (
-    params: {
-      status?: string;
-      page?: number;
-      limit?: number;
-      search?: string;
-      orderBy?: string; // field_name:asc or field_name:desc
-      idBrandMaster?: number | "null";
-    } = {},
-  ) => {
-    const auth = await getAuth();
+    params: IVMListParams,
+  ): Promise<{ vmList: IVMCreatedResponse[]; totalCount: number }> => {
     setIsLoading(true);
-    const response = await api.get<IListAll<IVMCreatedResponse>>({
+    const auth = await getAuth();
+
+    const queryParams: Record<string, string | number | boolean> = {};
+
+    queryParams.page = params.page ?? 0;
+    queryParams.limit = params.limit ?? 10;
+
+    if (params.search) {
+      queryParams.search = params.search;
+    }
+
+    if (params.orderBy) {
+      queryParams.orderBy = params.orderBy;
+    }
+
+    if (params.status) {
+      queryParams.status = params.status;
+    }
+
+    if (params.idBrandMaster !== undefined && params.idBrandMaster !== null) {
+      queryParams.idBrandMaster = params.idBrandMaster;
+    }
+
+    if (params.onlyMyVMs === true) {
+      queryParams.onlyMyVMs = true;
+    }
+
+    if (params.onlyMSPVMs === true) {
+      queryParams.onlyMSPVMs = true;
+    }
+
+    const response = await api.get<IVMListResponse>({
       url: "/vm",
       auth,
-      params: {
-        ...params,
-        //status: "PAUSED", // "RUNNING", "STOPPED", "PAUSED", "null", undefined
-      },
+      params: queryParams,
     });
 
     setIsLoading(false);
+
     if (response.error) {
-      toast.error(response.message);
-      return { totalCount: 0, vmList: [] };
+      return {
+        vmList: [],
+        totalCount: 0,
+      };
     }
 
-    const vmList = response.data?.result;
-    const totalCount = parseInt(response.data?.totalCount?.toString());
-    return { totalCount, vmList };
+    return {
+      vmList: response.data.result,
+      totalCount: response.data.totalCount,
+    };
   };
 
-  return { isLoading, fetchMyVmsList };
+  return { fetchMyVmsList, isLoading };
 };

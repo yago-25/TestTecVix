@@ -4,7 +4,6 @@
   "description": "",
   "main": "dist/index.js",
   "scripts": {
-    "test": "npx jest --coverage --testTimeout 30000",
     "test:dev": "npx jest --watch --testTimeout 30000 --detectOpenHandles",
     "clean": "if [ -d dist ]; then rm -rf dist; fi",
     "build": "npm run clean && npx prisma generate && npx tsc && mkdir -p dist/swagger/schemas && cp src/swagger/schemas/json-schema.json dist/swagger/schemas/json-schema.json && cp src/swagger/swagger.yaml dist/swagger/swagger.yaml",
@@ -18,7 +17,10 @@
     "dc:up": "docker compose up -d --build && docker compose logs -f api",
     "dc:down": "docker compose down --remove-orphans",
     "db:up": "docker compose -f docker-compose-db.yml up -d",
-    "db:down": "docker compose -f docker-compose-db.yml down --remove-orphans"
+    "db:down": "docker compose -f docker-compose-db.yml down --remove-orphans",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"
@@ -60,7 +62,7 @@
     "@types/jsonwebtoken": "^9.0.7",
     "@types/multer": "^1.4.12",
     "@types/node": "^22.8.4",
-    "@types/supertest": "^6.0.2",
+    "@types/supertest": "^6.0.3",
     "@types/ws": "^8.18.0",
     "@types/yamljs": "^0.2.34",
     "eslint": "^9.13.0",
@@ -71,10 +73,11 @@
     "jest-mock-extended": "^4.0.0-beta1",
     "prettier": "^3.3.3",
     "prisma-dbml-generator": "^0.12.0",
-    "supertest": "^7.0.0",
+    "supertest": "^7.2.2",
     "ts-jest": "^29.2.5",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.6.3",
-    "typescript-eslint": "^8.12.2"
+    "typescript-eslint": "^8.12.2",
+    "vitest": "^4.0.17"
   }
 }

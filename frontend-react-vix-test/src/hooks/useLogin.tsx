@@ -20,14 +20,13 @@ interface IUserLoginResponse {
     updatedAt: string | Date;
     username: string;
     userPhoneNumber: string | null;
+    fullName?: string;
   };
 }
 
-
 export const useLogin = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const { setIsOpenModalUserNotActive, setLoginTime } =
-    useZGlobalVar();
+  const { setIsOpenModalUserNotActive, setLoginTime } = useZGlobalVar();
   const { setUser } = useZUserProfile();
   const { resetAllStates } = useZResetAllStates();
   const navigate = useNavigate();
@@ -76,8 +75,11 @@ export const useLogin = () => {
       token: response.data.token,
       role: response.data.user.role,
       userPhoneNumber: response.data.user.userPhoneNumber,
+      fullName: response.data.user.fullName,
     });
     setLoginTime(new Date());
+
+    navigate("/");
   };
 
   const goLogout = () => {

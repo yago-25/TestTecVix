@@ -39,32 +39,41 @@ model brandMaster {
   cep           String?
   cityCode      Int?
   district      String?
-  stripeUserId  String?
-  isPoc         Boolean?  @default(false)
-  contract      String?
-  contractAt    DateTime? @db.DateTime(0)
-  pocOpenedAt   DateTime? @db.DateTime(0)
-  manual        String?
-  termsOfUse    String?
-  privacyPolicy String?
-  vM            vM[]
-  users         user[]
+  stripeUserId           String?
+  isPoc                  Boolean?  @default(false)
+  contract               String?
+  contractAt             DateTime? @db.DateTime(0)
+  pocOpenedAt            DateTime? @db.DateTime(0)
+  manual                 String?
+  termsOfUse             String?
+  privacyPolicy          String?
+  idBrandTheme           Int?
+  isStripeActive         Boolean?  @default(false)
+  discountRate           Decimal?  @db.Decimal(10, 2)
+  minConsumption         Decimal?  @db.Decimal(10, 2)
+  hasSelfRegister        Boolean?  @default(false)
+  hasPrepaid             Boolean?  @default(false)
+  retailPercentageDefault Decimal? @db.Decimal(10, 2)
+  vM                     vM[]
+  users                  user[]
 }
 
 model vM {
-  idVM          Int          @id @default(autoincrement())
+  idVM          Int           @id @default(autoincrement())
   vmName        String?
   vCPU          Int
   ram           Int
   disk          Int
-  hasBackup     Boolean?     @default(false)
+  hasBackup     Boolean?      @default(false)
+  pass          String?
+  location      ETaskLocation?
   idBrandMaster Int?
   status        EVMStatus?
-  createdAt     DateTime?    @default(now()) @db.DateTime(0)
-  updatedAt     DateTime?    @default(now()) @db.DateTime(0)
-  deletedAt     DateTime?    @db.DateTime(0)
+  createdAt     DateTime?     @default(now()) @db.DateTime(0)
+  updatedAt     DateTime?     @default(now()) @db.DateTime(0)
+  deletedAt     DateTime?     @db.DateTime(0)
   os            String?
-  brandMaster   brandMaster? @relation(fields: [idBrandMaster], references: [idBrandMaster])
+  brandMaster   brandMaster?  @relation(fields: [idBrandMaster], references: [idBrandMaster])
 
   @@index([idBrandMaster], map: "vM_idBrandMaster_fkey")
 }
@@ -98,4 +107,9 @@ enum ERole {
   admin
   manager
   member
+}
+
+enum ETaskLocation {
+  bre_barueri
+  usa_miami
 }

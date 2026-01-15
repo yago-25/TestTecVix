@@ -65,6 +65,7 @@ export const VmCard = ({
   const [openModalWarning, setOpenModalWarning] = useState(false);
   const [preDisk, setPreDisk] = useState<number | string>(0);
   const [taskState, setTaskState] = useState(task);
+  const [isProcessing, setIsProcessing] = useState(false);
   const { ref, position } = useSelfPosition(openModalSlider);
   const {
     updateThisVm,
@@ -80,6 +81,7 @@ export const VmCard = ({
     getVMById: getVMByIdResource,
     isLoading,
     getOS,
+    updateVMStatus,
   } = useVmResource();
 
   const getVMById = async () => {
@@ -99,6 +101,7 @@ export const VmCard = ({
     setOpenModalSlider(false);
     setOpenModal(false);
     setUpdateThisVm(null);
+    setIsProcessing(false);
   };
 
   const handleCancel = () => {
@@ -107,21 +110,30 @@ export const VmCard = ({
   };
 
   const handleConfirm = async () => {
-    if (statusState !== preStatusState) {
-      setPreStatusState(statusState);
+    if (statusState !== preStatusState && !isProcessing) {
+      setIsProcessing(true);
 
+      if (statusState === "RUNNING") {
+        await updateVMStatus({ idVM: vmId, status: "RUNNING" });
+      } else if (statusState === "PAUSED") {
+        await updateVMStatus({ idVM: vmId, status: "PAUSED" });
+      }
+
+      setPreStatusState(statusState);
       await getVMById();
     }
     setShowConfirmation(false);
   };
 
   const handlePaused = () => {
+    if (isProcessing) return;
     setStatusState("PAUSED");
     if (checkStatus(statusState, taskState?.action).isRunning)
       setShowConfirmation(true);
   };
 
   const handleStart = () => {
+    if (isProcessing) return;
     setStatusState("RUNNING");
     if (!checkStatus(statusState, taskState?.action).isRunning)
       setShowConfirmation(true);
@@ -228,7 +240,10 @@ export const VmCard = ({
         >
           {/* Start */}
           <Btn
-            disabled={checkStatus(statusState, taskState?.action).isWaiting}
+            disabled={
+              checkStatus(statusState, taskState?.action).isWaiting ||
+              isProcessing
+            }
             onClick={handleStart}
             className="w-full"
             sx={{
@@ -256,7 +271,10 @@ export const VmCard = ({
           </Btn>
           {/* Pause */}
           <Btn
-            disabled={checkStatus(statusState, taskState?.action).isWaiting}
+            disabled={
+              checkStatus(statusState, taskState?.action).isWaiting ||
+              isProcessing
+            }
             onClick={handlePaused}
             className="w-full"
             sx={{
@@ -471,10 +489,10 @@ export const VmCard = ({
             ...(!showConfirmation && { display: "none" }),
           }}
         >
-          <Button onClick={handleCancel} sx={{}}>
+          <Button onClick={handleCancel} disabled={isProcessing}>
             <CloseIcon sx={{ color: theme[mode].red, fontSize: "14px" }} />
           </Button>
-          <Button onClick={handleConfirm}>
+          <Button onClick={handleConfirm} disabled={isProcessing}>
             <CheckIcon sx={{ color: theme[mode].blue, fontSize: "14px" }} />
           </Button>
         </Box>
