@@ -60,6 +60,7 @@ export const useUserResources = () => {
 
       role: response.data.role,
       userPhoneNumber: response.data.userPhoneNumber,
+      fullName: response.data.fullName || "",
     });
 
     return response.data;

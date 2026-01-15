@@ -20,6 +20,7 @@ interface IUserLoginResponse {
     updatedAt: string | Date;
     username: string;
     userPhoneNumber: string | null;
+    fullName?: string;
   };
 }
 
@@ -74,6 +75,7 @@ export const useLogin = () => {
       token: response.data.token,
       role: response.data.user.role,
       userPhoneNumber: response.data.user.userPhoneNumber,
+      fullName: response.data.user.fullName,
     });
     setLoginTime(new Date());
 

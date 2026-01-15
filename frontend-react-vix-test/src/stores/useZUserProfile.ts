@@ -16,6 +16,7 @@ export interface IUserProfile {
   token: string | null;
   idBrand: number | null;
   role: TRole | null;
+  fullName: string | null;
 }
 const INIT_STATE: IUserProfile = {
   idUser: null,
@@ -29,6 +30,7 @@ const INIT_STATE: IUserProfile = {
   idBrand: null,
   lastLoginDate: "",
   role: null,
+  fullName: null,
 };
 
 interface IUserProfileState extends IUserProfile {
