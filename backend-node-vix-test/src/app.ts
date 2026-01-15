@@ -7,6 +7,8 @@ import { routes } from "./routes/_index";
 import { notImplemented } from "./middlewares/notImplemented";
 import { errorHandler } from "./middlewares/errorHandler";
 import { setupSwagger } from "./swagger";
+import swaggerUi from "swagger-ui-express";
+import { swaggerSpec } from "./docs/swagger";
 
 const app = express();
 
@@ -26,5 +28,6 @@ app.use(routes);
 setupSwagger(app);
 app.use(notImplemented);
 app.use(errorHandler as unknown as ErrorRequestHandler);
+app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 export { app };
