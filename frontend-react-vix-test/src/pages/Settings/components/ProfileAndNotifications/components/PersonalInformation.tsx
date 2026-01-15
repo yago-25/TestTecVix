@@ -15,7 +15,7 @@ import { PerfilPhotoUpload } from "./PerfilPhotoUpload";
 export const PersonalInformation = () => {
   const { t } = useTranslation();
   const { theme, mode } = useZTheme();
-  const { username, userEmail, userPhoneNumber } = useZUserProfile();
+  const { username, userEmail, userPhoneNumber, fullName } = useZUserProfile();
   const {
     userEmail: userEmailForm,
     userName,
@@ -123,7 +123,7 @@ export const PersonalInformation = () => {
   };
 
   const validEmail = () => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Regex para validar email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!userEmailForm.value) {
       return setFormProfileNotifications({
         userEmail: {
@@ -145,7 +145,6 @@ export const PersonalInformation = () => {
       });
     }
 
-    // Se o email for válido
     return setFormProfileNotifications({
       userEmail: {
         ...userEmailForm,
@@ -155,7 +154,7 @@ export const PersonalInformation = () => {
   };
 
   const validPhoneNumber = () => {
-    const phoneRegex = /^\d{10,11}$/; // Regex para validar telefone com 10 ou 11 dígitos
+    const phoneRegex = /^\d{10,11}$/;
 
     if (!userPhone.value) {
       return setFormProfileNotifications({
@@ -175,7 +174,6 @@ export const PersonalInformation = () => {
       });
     }
 
-    // Se o telefone for válido
     return setFormProfileNotifications({
       userPhone: {
         ...userPhone,
@@ -188,9 +186,11 @@ export const PersonalInformation = () => {
     key: keyof IFormProfileNotificationsVar,
     val: string,
   ) => {
+    const currentField = useZFormProfileNotifications.getState()[key];
+
     setFormProfileNotifications({
       [key]: {
-        ...[key],
+        ...currentField,
         value: val,
       },
     });
@@ -198,28 +198,18 @@ export const PersonalInformation = () => {
 
   useEffect(() => {
     setFormProfileNotifications({
-      fullNameForm: {
-        ...fullNameForm,
-        value: "",
-        errorMessage: "",
-      },
-      userName: {
-        ...userName,
-        value: username || "",
-        errorMessage: "",
-      },
-      userEmail: {
-        ...userEmailForm,
-        value: userEmail || "",
-        errorMessage: "",
-      },
-      userPhone: {
-        ...userPhone,
-        value: userPhoneNumber || "",
-        errorMessage: "",
-      },
+      fullNameForm: { value: fullName ?? "", errorMessage: "" },
+      userName: { value: username ?? "", errorMessage: "" },
+      userEmail: { value: userEmail ?? "", errorMessage: "" },
+      userPhone: { value: userPhoneNumber ?? "", errorMessage: "" },
     });
-  }, []);
+  }, [
+    fullName,
+    username,
+    userEmail,
+    userPhoneNumber,
+    setFormProfileNotifications,
+  ]);
 
   return (
     <Stack

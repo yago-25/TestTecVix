@@ -154,6 +154,8 @@ export class UserModel {
         createdAt: true,
         updatedAt: true,
         deletedAt: true,
+        fullName: true,
+        userPhoneNumber: true,
       },
     });
   }
